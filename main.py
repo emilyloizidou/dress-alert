@@ -2,12 +2,10 @@ import requests
 import time
 import os
 import sys
-import json
-from bs4 import BeautifulSoup
-import smtplib
+import re
 from email.mime.text import MIMEText
+import smtplib
 from dotenv import load_dotenv
-from playwright.sync_api import sync_playwright
 
 load_dotenv()
 
@@ -39,38 +37,32 @@ def check_stock():
     print("🔍 Checking stock...")
     
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.set_default_timeout(60000)
-            page.goto(URL, wait_until="domcontentloaded")
-            page.wait_for_timeout(1500)  # Wait for JS to render
+        r = requests.get(URL, timeout=20)
+        html = r.text
+        
+        for size in TARGET_SIZES:
+            # Look for the pattern: <input ... name="Size" value="S" ... class="disabled">
+            # If it has class="disabled", it's unavailable. If no class="disabled", it's available
             
-            for size in TARGET_SIZES:
-                try:
-                    # Find the radio button for this size
-                    size_radio = page.locator(f'input[name="Size"][value="{size}"]').first
-                    
-                    if size_radio.count() > 0:
-                        # Check if it has the "disabled" class
-                        has_disabled_class = size_radio.evaluate("el => el.classList.contains('disabled')")
-                        
-                        if not has_disabled_class:
-                            # Size is available!
-                            if not already_alerted:
-                                print(f"✅ Found {size} IN STOCK!")
-                                send_email(size)
-                                already_alerted = True
-                            browser.close()
-                            return
-                        else:
-                            print(f"  {size}: Unavailable")
-                except Exception as e:
-                    if TEST_MODE:
-                        print(f"  Debug: {size} - {e}")
+            # Pattern: <input ... value="S" ... /> with or without class="disabled"
+            pattern = f'<input[^>]*name="Size"[^>]*value="{size}"[^>]*>'
+            match = re.search(pattern, html)
             
-            browser.close()
-            print("❌ All target sizes still sold out")
+            if match:
+                input_tag = match.group(0)
+                has_disabled = 'class="disabled"' in input_tag or "class='disabled'" in input_tag
+                
+                if not has_disabled:
+                    # Size is available!
+                    if not already_alerted:
+                        print(f"✅ Found {size} IN STOCK!")
+                        send_email(size)
+                        already_alerted = True
+                    return
+                else:
+                    print(f"  {size}: Unavailable")
+        
+        print("❌ All target sizes still sold out")
     except Exception as e:
         print(f"❌ Error checking stock: {e}")
 
