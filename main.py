@@ -3,8 +3,8 @@ import time
 import os
 import sys
 import re
-from email.mime.text import MIMEText
-import smtplib
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,24 +14,23 @@ EU_URL = "https://www.eu.nadinemerabi.com/products/elle-white-dress"
 TARGET_SIZES = ["S", "S/M", "XL"]
 
 EMAIL = os.getenv("EMAIL_ADDRESS")
-PASSWORD = os.getenv("EMAIL_PASSWORD")
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 TO = os.getenv("TO_EMAIL")
 
-print(f"DEBUG: EMAIL={EMAIL}, PASSWORD={'*' * len(PASSWORD) if PASSWORD else 'None'}, TO={TO}")
+print(f"DEBUG: EMAIL={EMAIL}, SENDGRID_API_KEY={'*' * 10 if SENDGRID_API_KEY else 'None'}, TO={TO}")
 
 TEST_MODE = "--test" in sys.argv  # Run once and exit
 
 def send_email(size, url):
     try:
-        msg = MIMEText(f"🚨 Size {size} is now IN STOCK!\n\nBuy it here:\n{url}")
-        msg["Subject"] = "Elle White Dress Available!"
-        msg["From"] = EMAIL
-        msg["To"] = TO
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(EMAIL, PASSWORD)
-            server.send_message(msg)
-
+        message = Mail(
+            from_email=EMAIL,
+            to_emails=TO,
+            subject="Elle White Dress Available!",
+            plain_text_content=f"🚨 Size {size} is now IN STOCK!\n\nBuy it here:\n{url}"
+        )
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        sg.send(message)
         print("📧 Email sent")
     except Exception as e:
         print(f"❌ Email sending failed: {e}")
