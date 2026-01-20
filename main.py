@@ -117,7 +117,20 @@ def send_email(size, url):
         log("📧 Email sent (Gmail SMTP)")
     except Exception as e:
         provider = "SendGrid" if SENDGRID_API_KEY else "Gmail SMTP"
-        log(f"❌ {provider} email failed: {e}")
+        details = ""
+        for attr in ("body", "message"):
+            val = getattr(e, attr, None)
+            if val:
+                try:
+                    details = val.decode("utf-8", errors="replace") if isinstance(val, (bytes, bytearray)) else str(val)
+                except Exception:
+                    details = str(val)
+                break
+
+        if details:
+            log(f"❌ {provider} email failed: {e}\n--- details ---\n{details}\n-------------")
+        else:
+            log(f"❌ {provider} email failed: {e}")
 
 def check_stock():
     log("🔍 Checking stock...")
