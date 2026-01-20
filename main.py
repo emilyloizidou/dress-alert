@@ -38,35 +38,28 @@ def send_email(size, url):
 
 def check_stock():
     print("🔍 Checking stock...")
-    
+    found_any = False
     urls = [("UK", URL), ("EU", EU_URL)]
-    
     for region, check_url in urls:
         try:
             r = requests.get(check_url, timeout=20)
             html = r.text
-            
             for size in TARGET_SIZES:
-                # Look for the pattern: <input ... name="Size" value="S" ... class="disabled">
-                # If it has class="disabled", it's unavailable. If no class="disabled", it's available
-                
                 pattern = f'<input[^>]*name="Size"[^>]*value="{size}"[^>]*>'
                 match = re.search(pattern, html)
-                
                 if match:
                     input_tag = match.group(0)
                     has_disabled = 'class="disabled"' in input_tag or "class='disabled'" in input_tag
-                    
                     if not has_disabled:
-                        # Size is available!
                         print(f"✅ Found {size} IN STOCK on {region} site!")
                         send_email(size, check_url)
+                        found_any = True
                     else:
                         print(f"  [{region}] {size}: Unavailable")
         except Exception as e:
             print(f"❌ Error checking {region} site: {e}")
-    
-    print("❌ All target sizes still sold out on both sites")
+    if not found_any:
+        print("❌ All target sizes still sold out on both sites")
 
 if TEST_MODE:
     print("🧪 TEST MODE - checking once and exiting...")
