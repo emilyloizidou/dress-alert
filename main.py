@@ -15,6 +15,7 @@ except Exception:  # sendgrid is optional (e.g. local SMTP-only installs)
     SendGridAPIClient = None
     Mail = None
 from dotenv import load_dotenv
+# small change
 
 # Ensure TLS uses a valid CA bundle on macOS/venv.
 os.environ.setdefault("SSL_CERT_FILE", certifi.where())
@@ -30,6 +31,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 TO = os.getenv("TO_EMAIL")
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL") or EMAIL
+
 
 DEBUG = "--debug" in sys.argv
 if DEBUG:
