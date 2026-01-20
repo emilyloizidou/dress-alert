@@ -17,6 +17,8 @@ EMAIL = os.getenv("EMAIL_ADDRESS")
 PASSWORD = os.getenv("EMAIL_PASSWORD")
 TO = os.getenv("TO_EMAIL")
 
+print(f"DEBUG: EMAIL={EMAIL}, PASSWORD={'*' * len(PASSWORD) if PASSWORD else 'None'}, TO={TO}")
+
 TEST_MODE = "--test" in sys.argv  # Run once and exit
 
 def send_email(size, url):
