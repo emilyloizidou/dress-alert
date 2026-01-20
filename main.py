@@ -28,7 +28,7 @@ def send_email(size, url):
         msg["From"] = EMAIL
         msg["To"] = TO
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(EMAIL, PASSWORD)
             server.send_message(msg)
 
