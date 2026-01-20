@@ -20,16 +20,19 @@ TO = os.getenv("TO_EMAIL")
 TEST_MODE = "--test" in sys.argv  # Run once and exit
 
 def send_email(size, url):
-    msg = MIMEText(f"🚨 Size {size} is now IN STOCK!\n\nBuy it here:\n{url}")
-    msg["Subject"] = "Elle White Dress Available!"
-    msg["From"] = EMAIL
-    msg["To"] = TO
+    try:
+        msg = MIMEText(f"🚨 Size {size} is now IN STOCK!\n\nBuy it here:\n{url}")
+        msg["Subject"] = "Elle White Dress Available!"
+        msg["From"] = EMAIL
+        msg["To"] = TO
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(EMAIL, PASSWORD)
-        server.send_message(msg)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(EMAIL, PASSWORD)
+            server.send_message(msg)
 
-    print("📧 Email sent")
+        print("📧 Email sent")
+    except Exception as e:
+        print(f"❌ Email sending failed: {e}")
 
 def check_stock():
     print("🔍 Checking stock...")
