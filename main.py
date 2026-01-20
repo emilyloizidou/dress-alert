@@ -24,7 +24,7 @@ load_dotenv()
 
 URL = "https://www.nadinemerabi.com/products/elle-white-dress"
 EU_URL = "https://www.eu.nadinemerabi.com/products/elle-white-dress"
-TARGET_SIZES = ["S", "S/M", "XL"]
+TARGET_SIZES = ["S", "S/M"]
 
 EMAIL = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
