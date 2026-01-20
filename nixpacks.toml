@@ -1,0 +1,12 @@
+# Railway uses Nixpacks by default for Python repos.
+# This pins a stable Python version and defines the start command.
+
+[variables]
+PYTHONUNBUFFERED = "1"
+
+[phases.setup]
+# Use a stable CPython version that is widely supported.
+pythonVersion = "3.12"
+
+[start]
+cmd = "python main.py"

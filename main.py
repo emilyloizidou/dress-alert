@@ -3,9 +3,13 @@ import time
 import os
 import sys
 import re
-from email.mime.text import MIMEText
+import certifi
 import smtplib
+from email.message import EmailMessage
 from dotenv import load_dotenv
+
+# Ensure TLS uses a valid CA bundle on macOS/venv.
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
 
 load_dotenv()
 
@@ -14,27 +18,46 @@ EU_URL = "https://www.eu.nadinemerabi.com/products/elle-white-dress"
 TARGET_SIZES = ["S", "S/M", "XL"]
 
 EMAIL = os.getenv("EMAIL_ADDRESS")
-PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 TO = os.getenv("TO_EMAIL")
 
-print(f"DEBUG: EMAIL={EMAIL}, PASSWORD={'*' * len(PASSWORD) if PASSWORD else 'None'}, TO={TO}")
+DEBUG = "--debug" in sys.argv
+if DEBUG:
+    print(f"DEBUG: EMAIL={EMAIL}, TO={TO}")
 
 TEST_MODE = "--test" in sys.argv  # Run once and exit
 
+def _send_email_gmail_smtp(subject: str, body: str) -> None:
+    if not EMAIL:
+        raise ValueError("EMAIL_ADDRESS is not set")
+    if not EMAIL_PASSWORD:
+        raise ValueError("EMAIL_PASSWORD is not set")
+    if not TO:
+        raise ValueError("TO_EMAIL is not set")
+
+    msg = EmailMessage()
+    msg["From"] = EMAIL
+    msg["To"] = TO
+    msg["Subject"] = subject
+    msg.set_content(body)
+
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
+        smtp.login(EMAIL, EMAIL_PASSWORD)
+        smtp.send_message(msg)
+
+
 def send_email(size, url):
+    subject = "Elle White Dress Available!"
+    body = f"🚨 Size {size} is now IN STOCK!\n\nBuy it here:\n{url}"
+
     try:
-        msg = MIMEText(f"🚨 Size {size} is now IN STOCK!\n\nBuy it here:\n{url}")
-        msg["Subject"] = "Elle White Dress Available!"
-        msg["From"] = EMAIL
-        msg["To"] = TO
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-            server.login(EMAIL, PASSWORD)
-            server.send_message(msg)
-
-        print("📧 Email sent")
+        _send_email_gmail_smtp(subject, body)
+        print("📧 Email sent (Gmail SMTP)")
     except Exception as e:
-        print(f"❌ Email sending failed: {e}")
+        print(f"❌ Gmail SMTP email failed: {e}")
 
 def check_stock():
     print("🔍 Checking stock...")
