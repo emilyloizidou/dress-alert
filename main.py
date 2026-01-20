@@ -17,7 +17,6 @@ EMAIL = os.getenv("EMAIL_ADDRESS")
 PASSWORD = os.getenv("EMAIL_PASSWORD")
 TO = os.getenv("TO_EMAIL")
 
-already_alerted = False
 TEST_MODE = "--test" in sys.argv  # Run once and exit
 
 def send_email(size, url):
@@ -33,8 +32,6 @@ def send_email(size, url):
     print("📧 Email sent")
 
 def check_stock():
-    global already_alerted
-
     print("🔍 Checking stock...")
     
     urls = [("UK", URL), ("EU", EU_URL)]
@@ -57,11 +54,8 @@ def check_stock():
                     
                     if not has_disabled:
                         # Size is available!
-                        if not already_alerted:
-                            print(f"✅ Found {size} IN STOCK on {region} site!")
-                            send_email(size, check_url)
-                            already_alerted = True
-                        return
+                        print(f"✅ Found {size} IN STOCK on {region} site!")
+                        send_email(size, check_url)
                     else:
                         print(f"  [{region}] {size}: Unavailable")
         except Exception as e:
