@@ -11,7 +11,7 @@ load_dotenv()
 
 URL = "https://www.nadinemerabi.com/products/elle-white-dress"
 EU_URL = "https://www.eu.nadinemerabi.com/products/elle-white-dress"
-TARGET_SIZES = ["S", "S/M", "M"]
+TARGET_SIZES = ["S", "S/M", "XL"]
 
 EMAIL = os.getenv("EMAIL_ADDRESS")
 PASSWORD = os.getenv("EMAIL_PASSWORD")
@@ -37,7 +37,7 @@ def check_stock():
 
     print("🔍 Checking stock...")
     
-    urls = [("US", URL), ("EU", EU_URL)]
+    urls = [("UK", URL), ("EU", EU_URL)]
     
     for region, check_url in urls:
         try:
